@@ -12,6 +12,9 @@
 #ifdef WITH_CAMERAPOINTGREY
 #include "CameraPointGrey.h"
 #endif
+#ifdef WITH_CAMERAHIKROBOT
+#include "CameraHikrobot.h"
+#endif
 
 // Global camera enumerator
 std::vector<std::vector<CameraInfo>> CameraFactory::GetInterfaceCameraList() {
@@ -32,6 +35,10 @@ std::vector<std::vector<CameraInfo>> CameraFactory::GetInterfaceCameraList() {
 #ifdef WITH_CAMERAPOINTGREY
   std::vector<CameraInfo> ptgreycameras = CameraPointGrey::getCameraList();
   ret.push_back(ptgreycameras);
+#endif
+#ifdef WITH_CAMERAHIKROBOT
+  std::vector<CameraInfo> hikrobotcameras = CameraHikrobot::getCameraList();
+  ret.push_back(hikrobotcameras);
 #endif
 
   return ret;
@@ -63,6 +70,11 @@ CameraFactory::NewCamera(int interfaceNum, int camNum,
   interfaceNum -= 1;
   if (interfaceNum == 0)
     return std::make_unique<CameraPointGrey>(camNum, triggerMode);
+#endif
+#ifdef WITH_CAMERAHIKROBOT
+  interfaceNum -= 1;
+  if (interfaceNum == 0)
+    return std::make_unique<CameraHikrobot>(camNum, triggerMode);
 #endif
 
   return nullptr;
