@@ -8,36 +8,43 @@
 
 // Note: library headers conflict with IDS imaging headers
 //#include <xiApi.h>
-#include <MvCameraControl.h>
+
 
 
 #define HandleResult(res,place) if (res!=XI_OK) {printf("CameraHikrobot: Error at %s (%d)\n",place,res); fflush(stdout);}
 
-static  void* WorkThread(void* pUser) //the workthread function is placed directly here to avoid typo
+
+//To be improved:
+//1. the WorkThread function was originally a static void* global function within the camerahikro,
+//   but now it is changed to a member function declared in camhikro.h
+//   this has 2 drawbacks: 
+//      - it was not set to private.  Any object of this class can access this function and causes unexpected behaviour
+//      - need to add "this->" during the calling of this function
+void* CameraHikrobot::WorkThread(void* pUser) //the workthread function is placed directly here to avoid typo
 {
-    int nRet = MV_OK;
+    int nRetWT = MV_OK;
 
     MV_FRAME_OUT stOutFrame = {0};
     memset(&stOutFrame, 0, sizeof(MV_FRAME_OUT));
 
     while(1)
     {
-        nRet = MV_CC_GetImageBuffer(pUser, &stOutFrame, 1000);
-        if (nRet == MV_OK)
+        nRetWT = MV_CC_GetImageBuffer(pUser, &stOutFrame, 1000);
+        if (nRetWT == MV_OK)
         {
             printf("Get One Frame: Width[%d], Height[%d], nFrameNum[%d]\n",
                 stOutFrame.stFrameInfo.nWidth, stOutFrame.stFrameInfo.nHeight, stOutFrame.stFrameInfo.nFrameNum);
         }
         else
         {
-            printf("No data[0x%x]\n", nRet);
+            printf("No data[0x%x]\n", nRetWT);
         }
         if(NULL != stOutFrame.pBufAddr)
         {
-            nRet = MV_CC_FreeImageBuffer(pUser, &stOutFrame);
-            if(nRet != MV_OK)
+            nRetWT = MV_CC_FreeImageBuffer(pUser, &stOutFrame);
+            if(nRetWT != MV_OK)
             {
-                printf("Free Image Buffer fail! nRet [0x%x]\n", nRet);
+                printf("Free Image Buffer fail! nRetWT [0x%x]\n", nRetWT);
             }
         }
         if(g_bExit)
@@ -49,20 +56,68 @@ static  void* WorkThread(void* pUser) //the workthread function is placed direct
     return 0;
 }
 
+bool PrintDeviceInfo(MV_CC_DEVICE_INFO* pstMVDevInfo)
+{
+    if (NULL == pstMVDevInfo)
+    {
+        printf("The Pointer of pstMVDevInfo is NULL!\n");
+        return false;
+    }
+    if (pstMVDevInfo->nTLayerType == MV_GIGE_DEVICE)
+    {
+        int nIp1 = ((pstMVDevInfo->SpecialInfo.stGigEInfo.nCurrentIp & 0xff000000) >> 24);
+        int nIp2 = ((pstMVDevInfo->SpecialInfo.stGigEInfo.nCurrentIp & 0x00ff0000) >> 16);
+        int nIp3 = ((pstMVDevInfo->SpecialInfo.stGigEInfo.nCurrentIp & 0x0000ff00) >> 8);
+        int nIp4 = (pstMVDevInfo->SpecialInfo.stGigEInfo.nCurrentIp & 0x000000ff);
+
+        // ch:打印当前相机ip和用户自定义名字 | en:print current ip and user defined name
+        printf("CurrentIp: %d.%d.%d.%d\n" , nIp1, nIp2, nIp3, nIp4);
+        printf("UserDefinedName: %s\n\n" , pstMVDevInfo->SpecialInfo.stGigEInfo.chUserDefinedName);
+    }
+    else if (pstMVDevInfo->nTLayerType == MV_USB_DEVICE)
+    {
+        printf("UserDefinedName: %s\n", pstMVDevInfo->SpecialInfo.stUsb3VInfo.chUserDefinedName);
+        printf("Serial Number: %s\n", pstMVDevInfo->SpecialInfo.stUsb3VInfo.chSerialNumber);
+        printf("Device Number: %d\n\n", pstMVDevInfo->SpecialInfo.stUsb3VInfo.nDeviceNumber);
+    }
+    else
+    {
+        printf("Not support.\n");
+    }
+
+    return true;
+}
+
 std::vector<CameraInfo> CameraHikrobot::getCameraList(){
 
-    XI_RETURN stat = XI_OK;
-    DWORD numCams;
-    stat = xiGetNumberDevices(&numCams);
-    HandleResult(stat, "xiGetNumberDevices");
+    // XI_RETURN stat = XI_OK;
+    // DWORD numCams;
+    // stat = xiGetNumberDevices(&numCams);
+    // HandleResult(stat, "xiGetNumberDevices");
 
+    // std::vector<CameraInfo> ret(numCams);
+    // for(unsigned int i=0; i<numCams; i++){
+    //     CameraInfo info;
+    //     info.vendor = "Ximea";
+    //     char name[20];
+    //     xiGetDeviceInfoString(i, XI_PRM_DEVICE_NAME, name, 20);
+    //     info.model = name;
+    //     info.busID = i;
+    //     ret[i] = info;
+    // }
+    // return ret;
+
+    MV_CC_DEVICE_INFO_LIST stDeviceList;
+    unsigned int numCams = stDeviceList.nDeviceNum;
+    memset(&stDeviceList, 0, sizeof(MV_CC_DEVICE_INFO_LIST));
+    //nRet = MV_CC_EnumDevices(MV_GIGE_DEVICE | MV_USB_DEVICE, &stDeviceList);
     std::vector<CameraInfo> ret(numCams);
-    for(unsigned int i=0; i<numCams; i++){
+
+    for(unsigned int i = 0; i < numCams; i++) {
+        //MV_CC_DEVICE_INFO* pDeviceInfo = stDeviceList.pDeviceInfo[i];
         CameraInfo info;
-        info.vendor = "Ximea";
-        char name[20];
-        xiGetDeviceInfoString(i, XI_PRM_DEVICE_NAME, name, 20);
-        info.model = name;
+        info.vendor = "Hikrobot";
+        info.model = "Hikrobot";
         info.busID = i;
         ret[i] = info;
     }
@@ -71,7 +126,7 @@ std::vector<CameraInfo> CameraHikrobot::getCameraList(){
 
 CameraHikrobot::CameraHikrobot(unsigned int camNum, CameraTriggerMode triggerMode)
     : Camera(triggerMode), 
-    camera(NULL), 
+    camera(NULL), //this is the variable copied from Ximea camera
     g_bExit{ false }, 
     g_nPayloadSize{ 0 }, 
     nRet{ MV_OK }, 
@@ -102,34 +157,7 @@ CameraHikrobot::CameraHikrobot(unsigned int camNum, CameraTriggerMode triggerMod
                 {
                     break;
                 } 
-                {   //this is PrintDeviceInfo function in sample code.
-                    if (NULL == pDeviceInfo)
-                    {
-                        printf("The Pointer of pDeviceInfo is NULL!\n");
-                        //return false; (avoid returning in constructor)
-                    }
-                    if (pDeviceInfo->nTLayerType == MV_GIGE_DEVICE)
-                    {
-                        int nIp1 = ((pDeviceInfo->SpecialInfo.stGigEInfo.nCurrentIp & 0xff000000) >> 24);
-                        int nIp2 = ((pDeviceInfo->SpecialInfo.stGigEInfo.nCurrentIp & 0x00ff0000) >> 16);
-                        int nIp3 = ((pDeviceInfo->SpecialInfo.stGigEInfo.nCurrentIp & 0x0000ff00) >> 8);
-                        int nIp4 = (pDeviceInfo->SpecialInfo.stGigEInfo.nCurrentIp & 0x000000ff);
-
-                        // ch:打印当前相机ip和用户自定义名字 | en:print current ip and user defined name
-                        printf("CurrentIp: %d.%d.%d.%d\n" , nIp1, nIp2, nIp3, nIp4);
-                        printf("UserDefinedName: %s\n\n" , pDeviceInfo->SpecialInfo.stGigEInfo.chUserDefinedName);
-                    }
-                    else if (pDeviceInfo->nTLayerType == MV_USB_DEVICE)
-                    {
-                        printf("UserDefinedName: %s\n", pDeviceInfo->SpecialInfo.stUsb3VInfo.chUserDefinedName);
-                        printf("Serial Number: %s\n", pDeviceInfo->SpecialInfo.stUsb3VInfo.chSerialNumber);
-                        printf("Device Number: %d\n\n", pDeviceInfo->SpecialInfo.stUsb3VInfo.nDeviceNumber);
-                    }
-                    else
-                    {
-                        printf("Not support.\n");
-                    }
-                }         
+                PrintDeviceInfo(pDeviceInfo);            
             }  
         } 
         else
@@ -203,16 +231,26 @@ CameraHikrobot::CameraHikrobot(unsigned int camNum, CameraTriggerMode triggerMod
         g_nPayloadSize = stParam.nCurValue;
 
         //Set Gamma to 1.0 (linear)
-        MV_CC_SetBoolValue(handle, "GammaEnable", 1);   //Enable Gamma
-        MV_CC_SetEnumValue(handle, "GammaSelector", 1); //Enable User defined Gamma
-        MV_CC_SetFloatValue(handle, "Gamma", 1.f); //Input Gamma value
+        nRet = MV_CC_SetBoolValue(handle, "GammaEnable", 1);   //Enable Gamma
+        nRet = MV_CC_SetEnumValue(handle, "GammaSelector", 1); //Enable User defined Gamma
+        nRet = MV_CC_SetFloatValue(handle, "Gamma", 1.f); //Input Gamma value
+        if (MV_OK != nRet) {printf("Gamma Setting Fail!\n");}
 
         //Set Exposure
-        MV_CC_SetEnumValue(handle, "ExposureAuto", 0);
-        MV_CC_SetEnumValue(handle, "ExposureMode", 0);
-        MV_CC_SetFloatValue(handle, "ExposureTime", 16666.f);
+        nRet = MV_CC_SetEnumValue(handle, "ExposureAuto", 0);
+        nRet = MV_CC_SetEnumValue(handle, "ExposureMode", 0);
+        nRet = MV_CC_SetFloatValue(handle, "ExposureTime", 16666.f);
+        if (MV_OK != nRet) {printf("Exposure Setting Fail!\n");}
 
-        MV_CC_SetEnumValue(handle, "PixelFormat", 0x01080001);
+        //set gain TO BE MODIFIED
+        nRet = MV_CC_SetEnumValue(handle, "GainSelector", 0);
+        nRet = MV_CC_SetEnumValue(handle, "GainAuto", 0);
+        nRet = MV_CC_SetFloatValue(handle, "Gain", 0.f);
+        if (MV_OK != nRet) {printf("Gain Setting Fail!\n");}
+
+        //Set Pixel format
+        nRet = MV_CC_SetEnumValue(handle, "PixelFormat", 0x01080001);
+        if (MV_OK != nRet) {printf("Pixel Format Setting Fail!\n");}
 
         //MV_CC_SetIntValueEx ,
         //MV_CC_SetEnumValue , MV_CC_SetFloatValue , MV_CC_SetBoolValue ,
@@ -225,26 +263,57 @@ CameraHikrobot::CameraHikrobot(unsigned int camNum, CameraTriggerMode triggerMod
 
 CameraSettings CameraHikrobot::getCameraSettings(){
 
-    CameraSettings settings;
+    // CameraSettings settings;
 
-    int shutter;
-    xiGetParamInt(camera, XI_PRM_EXPOSURE, &shutter);
-    settings.shutter = shutter/1000.0; // from us to ms
-    xiGetParamFloat(camera, XI_PRM_GAIN, &settings.gain);
+    // int shutter;
+    // xiGetParamInt(camera, XI_PRM_EXPOSURE, &shutter);
+    // settings.shutter = shutter/1000.0; // from us to ms
+    // xiGetParamFloat(camera, XI_PRM_GAIN, &settings.gain);
+
+    CameraSettings settings;
+    MVCC_FLOATVALUE stExposureTime = {0};
+    MVCC_FLOATVALUE stGain = {0};
+    nRet = MV_CC_GetFloatValue(handle, "ExposureTime", &stExposureTime);
+    settings.shutter = stExposureTime.fCurValue / 1000.0;
+    nRet = MV_CC_GetFloatValue(handle, "Gain", &stGain);
+    settings.gain = stGain.fCurValue;
 
     return settings;
 }
 
 void CameraHikrobot::setCameraSettings(CameraSettings settings){
 
-    // Set shutter (in us)
-    xiSetParamInt(camera, XI_PRM_EXPOSURE, settings.shutter*1000);
-    // Set gain (in dB)
-    xiSetParamFloat(camera, XI_PRM_GAIN, settings.gain);
+    // // Set shutter (in us)
+    // xiSetParamInt(camera, XI_PRM_EXPOSURE, settings.shutter*1000);
+    // // Set gain (in dB)
+    // xiSetParamFloat(camera, XI_PRM_GAIN, settings.gain);
 
-    std::cout << "Setting camera parameters:" << std::endl
-              << "Shutter: " << settings.shutter << " ms" << std::endl
-              << "Gain: " << settings.gain << " dB" << std::endl;
+    // std::cout << "Setting camera parameters:" << std::endl
+    //           << "Shutter: " << settings.shutter << " ms" << std::endl
+    //           << "Gain: " << settings.gain << " dB" << std::endl;
+
+        //Set Gamma to 1.0 (linear)
+        nRet = MV_CC_SetBoolValue(handle, "GammaEnable", 1);   //Enable Gamma
+        nRet = MV_CC_SetEnumValue(handle, "GammaSelector", 1); //Enable User defined Gamma
+        nRet = MV_CC_SetFloatValue(handle, "Gamma", 1.f); //Input Gamma value
+        if (MV_OK != nRet) {printf("Gamma Setting Fail!\n");}
+
+        //Set Exposure
+        nRet = MV_CC_SetEnumValue(handle, "ExposureAuto", 0);
+        nRet = MV_CC_SetEnumValue(handle, "ExposureMode", 0);
+        nRet = MV_CC_SetFloatValue(handle, "ExposureTime", settings.shutter * 1000);
+        if (MV_OK != nRet) {printf("Exposure Setting Fail!\n");}
+
+        //set gain TO BE MODIFIED
+        nRet = MV_CC_SetEnumValue(handle, "GainSelector", 0);
+        nRet = MV_CC_SetEnumValue(handle, "GainAuto", 0);
+        nRet = MV_CC_SetFloatValue(handle, "Gain", settings.gain);
+        if (MV_OK != nRet) {printf("Gain Setting Fail!\n");}
+
+        //Set Pixel format
+        nRet = MV_CC_SetEnumValue(handle, "PixelFormat", 0x01080001);
+        if (MV_OK != nRet) {printf("Pixel Format Setting Fail!\n");}
+
 }
 
 void CameraHikrobot::startCapture(){

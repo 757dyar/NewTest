@@ -2,6 +2,7 @@
 #define CAMERAHIKROBOT_H
 
 #include "Camera.h"
+#include <MvCameraControl.h>
 
 ////////////////////////////////////////// For later change
 // XIMEA specific type
@@ -23,6 +24,9 @@ class CameraHikrobot : public Camera {
         size_t getFrameWidth();
         size_t getFrameHeight();
         ~CameraHikrobot();
+
+        void* WorkThread(void* pUser);
+        
     private:
         HANDLE camera;
         int stat;
