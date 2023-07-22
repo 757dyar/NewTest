@@ -25,7 +25,7 @@ class CameraHikrobot : public Camera {
         size_t getFrameHeight();
         ~CameraHikrobot();
 
-        void* WorkThread(void* pUser);
+        // void* WorkThread(void* pUser);
         
     private:
         HANDLE camera;

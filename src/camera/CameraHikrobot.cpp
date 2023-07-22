@@ -20,41 +20,39 @@
 //   this has 2 drawbacks: 
 //      - it was not set to private.  Any object of this class can access this function and causes unexpected behaviour
 //      - need to add "this->" during the calling of this function
-void* CameraHikrobot::WorkThread(void* pUser) //the workthread function is placed directly here to avoid typo
-{
-    int nRetWT = MV_OK;
 
-    MV_FRAME_OUT stOutFrame = {0};
-    memset(&stOutFrame, 0, sizeof(MV_FRAME_OUT));
-
-    while(1)
-    {
-        nRetWT = MV_CC_GetImageBuffer(pUser, &stOutFrame, 1000);
-        if (nRetWT == MV_OK)
-        {
-            printf("Get One Frame: Width[%d], Height[%d], nFrameNum[%d]\n",
-                stOutFrame.stFrameInfo.nWidth, stOutFrame.stFrameInfo.nHeight, stOutFrame.stFrameInfo.nFrameNum);
-        }
-        else
-        {
-            printf("No data[0x%x]\n", nRetWT);
-        }
-        if(NULL != stOutFrame.pBufAddr)
-        {
-            nRetWT = MV_CC_FreeImageBuffer(pUser, &stOutFrame);
-            if(nRetWT != MV_OK)
-            {
-                printf("Free Image Buffer fail! nRetWT [0x%x]\n", nRetWT);
-            }
-        }
-        if(g_bExit)
-        {
-            break;
-        }
-    }
-
-    return 0;
-}
+// void* CameraHikrobot::WorkThread(void* pUser) //the workthread function is placed directly here to avoid typo
+// {
+//     int nRetWT = MV_OK;
+//     MV_FRAME_OUT stOutFrame = {0};
+//     memset(&stOutFrame, 0, sizeof(MV_FRAME_OUT));
+//     while(1)
+//     {
+//         nRetWT = MV_CC_GetImageBuffer(pUser, &stOutFrame, 1000);
+//         if (nRetWT == MV_OK)
+//         {
+//             printf("Get One Frame: Width[%d], Height[%d], nFrameNum[%d]\n",
+//                 stOutFrame.stFrameInfo.nWidth, stOutFrame.stFrameInfo.nHeight, stOutFrame.stFrameInfo.nFrameNum);
+//         }
+//         else
+//         {
+//             printf("No data[0x%x]\n", nRetWT);
+//         }
+//         if(NULL != stOutFrame.pBufAddr)
+//         {
+//             nRetWT = MV_CC_FreeImageBuffer(pUser, &stOutFrame);
+//             if(nRetWT != MV_OK)
+//             {
+//                 printf("Free Image Buffer fail! nRetWT [0x%x]\n", nRetWT);
+//             }
+//         }
+//         if(g_bExit)
+//         {
+//             break;
+//         }
+//     }
+//     return 0;
+// }
 
 bool PrintDeviceInfo(MV_CC_DEVICE_INFO* pstMVDevInfo)
 {
@@ -88,24 +86,47 @@ bool PrintDeviceInfo(MV_CC_DEVICE_INFO* pstMVDevInfo)
     return true;
 }
 
+// static void* WorkThread(void* pUser)
+// {
+//     int nRet = MV_OK;
+//     // ch:获取数据包大小 | en:Get payload size
+//     MVCC_INTVALUE stParam;
+//     memset(&stParam, 0, sizeof(MVCC_INTVALUE));
+//     nRet = MV_CC_GetIntValue(pUser, "PayloadSize", &stParam);
+//     if (MV_OK != nRet)
+//     {
+//         printf("Get PayloadSize fail! nRet [0x%x]\n", nRet);
+//         return NULL;
+//     }
+//     MV_FRAME_OUT_INFO_EX stImageInfo = {0};
+//     memset(&stImageInfo, 0, sizeof(MV_FRAME_OUT_INFO_EX));
+//     unsigned char * pData = (unsigned char *)malloc(sizeof(unsigned char) * stParam.nCurValue);
+//     if (NULL == pData)
+//     {
+//         return NULL;
+//     }
+//     unsigned int nDataSize = stParam.nCurValue;
+//     while(1)
+//     {
+// 		if(g_bExit)
+// 		{
+// 			break;
+// 		}
+//         nRet = MV_CC_GetOneFrameTimeout(pUser, pData, nDataSize, &stImageInfo, 1000);
+//         if (nRet == MV_OK)
+//         {
+//             printf("GetOneFrame, Width[%d], Height[%d], nFrameNum[%d]\n", 
+//                 stImageInfo.nWidth, stImageInfo.nHeight, stImageInfo.nFrameNum);
+//         }
+//         else{
+//             printf("No data[%x]\n", nRet);
+//         }
+//     }
+//     free(pData);
+//     return 0;
+// }
+
 std::vector<CameraInfo> CameraHikrobot::getCameraList(){
-
-    // XI_RETURN stat = XI_OK;
-    // DWORD numCams;
-    // stat = xiGetNumberDevices(&numCams);
-    // HandleResult(stat, "xiGetNumberDevices");
-
-    // std::vector<CameraInfo> ret(numCams);
-    // for(unsigned int i=0; i<numCams; i++){
-    //     CameraInfo info;
-    //     info.vendor = "Ximea";
-    //     char name[20];
-    //     xiGetDeviceInfoString(i, XI_PRM_DEVICE_NAME, name, 20);
-    //     info.model = name;
-    //     info.busID = i;
-    //     ret[i] = info;
-    // }
-    // return ret;
 
     MV_CC_DEVICE_INFO_LIST stDeviceList;
     unsigned int numCams = stDeviceList.nDeviceNum;
@@ -274,8 +295,9 @@ CameraSettings CameraHikrobot::getCameraSettings(){
     MVCC_FLOATVALUE stExposureTime = {0};
     MVCC_FLOATVALUE stGain = {0};
     nRet = MV_CC_GetFloatValue(handle, "ExposureTime", &stExposureTime);
-    settings.shutter = stExposureTime.fCurValue / 1000.0;
     nRet = MV_CC_GetFloatValue(handle, "Gain", &stGain);
+
+    settings.shutter = stExposureTime.fCurValue / 1000.0;
     settings.gain = stGain.fCurValue;
 
     return settings;
@@ -292,55 +314,38 @@ void CameraHikrobot::setCameraSettings(CameraSettings settings){
     //           << "Shutter: " << settings.shutter << " ms" << std::endl
     //           << "Gain: " << settings.gain << " dB" << std::endl;
 
-        //Set Gamma to 1.0 (linear)
-        nRet = MV_CC_SetBoolValue(handle, "GammaEnable", 1);   //Enable Gamma
-        nRet = MV_CC_SetEnumValue(handle, "GammaSelector", 1); //Enable User defined Gamma
-        nRet = MV_CC_SetFloatValue(handle, "Gamma", 1.f); //Input Gamma value
-        if (MV_OK != nRet) {printf("Gamma Setting Fail!\n");}
+    //Set Gamma to 1.0 (linear)
+    nRet = MV_CC_SetBoolValue(handle, "GammaEnable", 1);   //Enable Gamma
+    nRet = MV_CC_SetEnumValue(handle, "GammaSelector", 1); //Enable User defined Gamma
+    nRet = MV_CC_SetFloatValue(handle, "Gamma", 1.f); //Input Gamma value
+    if (MV_OK != nRet) {printf("Gamma Setting Fail!\n");}
 
-        //Set Exposure
-        nRet = MV_CC_SetEnumValue(handle, "ExposureAuto", 0);
-        nRet = MV_CC_SetEnumValue(handle, "ExposureMode", 0);
-        nRet = MV_CC_SetFloatValue(handle, "ExposureTime", settings.shutter * 1000);
-        if (MV_OK != nRet) {printf("Exposure Setting Fail!\n");}
+    //Set Exposure
+    nRet = MV_CC_SetEnumValue(handle, "ExposureAuto", 0);
+    nRet = MV_CC_SetEnumValue(handle, "ExposureMode", 0);
+    nRet = MV_CC_SetFloatValue(handle, "ExposureTime", settings.shutter * 1000);
+    if (MV_OK != nRet) {printf("Exposure Setting Fail!\n");}
 
-        //set gain TO BE MODIFIED
-        nRet = MV_CC_SetEnumValue(handle, "GainSelector", 0);
-        nRet = MV_CC_SetEnumValue(handle, "GainAuto", 0);
-        nRet = MV_CC_SetFloatValue(handle, "Gain", settings.gain);
-        if (MV_OK != nRet) {printf("Gain Setting Fail!\n");}
+    //set gain TO BE MODIFIED
+    nRet = MV_CC_SetEnumValue(handle, "GainSelector", 0);
+    nRet = MV_CC_SetEnumValue(handle, "GainAuto", 0);
+    nRet = MV_CC_SetFloatValue(handle, "Gain", settings.gain);
+    if (MV_OK != nRet) {printf("Gain Setting Fail!\n");}
 
-        //Set Pixel format
-        nRet = MV_CC_SetEnumValue(handle, "PixelFormat", 0x01080001);
-        if (MV_OK != nRet) {printf("Pixel Format Setting Fail!\n");}
+    //Set Pixel format
+    nRet = MV_CC_SetEnumValue(handle, "PixelFormat", 0x01080001);
+    if (MV_OK != nRet) {printf("Pixel Format Setting Fail!\n");}
 
 }
 
 void CameraHikrobot::startCapture(){
 
-    if(triggerMode == triggerModeHardware){
-        xiSetParamInt(camera, XI_PRM_ACQ_TIMING_MODE, XI_ACQ_TIMING_MODE_FREE_RUN);
-
-        // Configure for hardware trigger
-        stat = xiSetParamInt(camera, XI_PRM_TRG_SOURCE, XI_TRG_EDGE_RISING);
-        HandleResult(stat,"xiSetParam (XI_PRM_TRG_SOURCE)");
-
-        // Configure for exposure active trigger
-        stat = xiSetParamInt(camera, XI_PRM_TRG_SELECTOR, XI_TRG_SEL_FRAME_START);
-        HandleResult(stat,"xiSetParam (XI_PRM_TRG_SELECTOR)");
-
-    } else if(triggerMode == triggerModeSoftware){
-        // Configure for software trigger (for getSingleFrame())
-        stat = xiSetParamInt(camera, XI_PRM_TRG_SOURCE, XI_TRG_SOFTWARE);
-        HandleResult(stat,"xiSetParam (XI_PRM_TRG_SOURCE)");
+    // ch:开始取流 | en:Start grab image
+    nRet = MV_CC_StartGrabbing(handle);
+    if (MV_OK != nRet)
+    {
+        printf("Start Grabbing fail! nRet [0x%x]\n", nRet);
     }
-
-    // Start aquistion
-    stat = xiStartAcquisition(camera);
-    HandleResult(stat,"xiStartAcquisition");
-
-    capturing = true;
-
 }
 
 void CameraHikrobot::stopCapture(){
@@ -353,6 +358,38 @@ void CameraHikrobot::stopCapture(){
 }
 
 CameraFrame CameraHikrobot::getFrame(){
+
+    // ch:获取数据包大小 | en:Get payload size
+    void* pUser;
+    MVCC_INTVALUE stParam;
+    memset(&stParam, 0, sizeof(MVCC_INTVALUE));
+    nRet = MV_CC_GetIntValue(pUser, "PayloadSize", &stParam);
+    if (MV_OK != nRet)
+    {
+        printf("Get PayloadSize fail! nRet [0x%x]\n", nRet);
+        //return NULL;
+    }
+
+    MV_FRAME_OUT_INFO_EX stImageInfo = {0};
+    memset(&stImageInfo, 0, sizeof(MV_FRAME_OUT_INFO_EX));
+    unsigned char * pData = (unsigned char *)malloc(sizeof(unsigned char) * stParam.nCurValue);
+    if (NULL == pData)
+    {
+        //return NULL;
+    }
+    unsigned int nDataSize = stParam.nCurValue;
+
+    nRet = MV_CC_GetOneFrameTimeout(pUser, pData, nDataSize, &stImageInfo, 1000);
+    if (nRet == MV_OK)
+    {
+        printf("GetOneFrame, Width[%d], Height[%d], nFrameNum[%d]\n", 
+            stImageInfo.nWidth, stImageInfo.nHeight, stImageInfo.nFrameNum);
+    }
+    else{
+        printf("No data[%x]\n", nRet);
+    }
+
+    free(pData);
 
     // Create single image buffer
     XI_IMG image;
