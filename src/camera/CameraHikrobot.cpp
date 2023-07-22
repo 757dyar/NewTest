@@ -13,47 +13,6 @@
 
 #define HandleResult(res,place) if (res!=XI_OK) {printf("CameraHikrobot: Error at %s (%d)\n",place,res); fflush(stdout);}
 
-
-//To be improved:
-//1. the WorkThread function was originally a static void* global function within the camerahikro,
-//   but now it is changed to a member function declared in camhikro.h
-//   this has 2 drawbacks: 
-//      - it was not set to private.  Any object of this class can access this function and causes unexpected behaviour
-//      - need to add "this->" during the calling of this function
-
-// void* CameraHikrobot::WorkThread(void* pUser) //the workthread function is placed directly here to avoid typo
-// {
-//     int nRetWT = MV_OK;
-//     MV_FRAME_OUT stOutFrame = {0};
-//     memset(&stOutFrame, 0, sizeof(MV_FRAME_OUT));
-//     while(1)
-//     {
-//         nRetWT = MV_CC_GetImageBuffer(pUser, &stOutFrame, 1000);
-//         if (nRetWT == MV_OK)
-//         {
-//             printf("Get One Frame: Width[%d], Height[%d], nFrameNum[%d]\n",
-//                 stOutFrame.stFrameInfo.nWidth, stOutFrame.stFrameInfo.nHeight, stOutFrame.stFrameInfo.nFrameNum);
-//         }
-//         else
-//         {
-//             printf("No data[0x%x]\n", nRetWT);
-//         }
-//         if(NULL != stOutFrame.pBufAddr)
-//         {
-//             nRetWT = MV_CC_FreeImageBuffer(pUser, &stOutFrame);
-//             if(nRetWT != MV_OK)
-//             {
-//                 printf("Free Image Buffer fail! nRetWT [0x%x]\n", nRetWT);
-//             }
-//         }
-//         if(g_bExit)
-//         {
-//             break;
-//         }
-//     }
-//     return 0;
-// }
-
 bool PrintDeviceInfo(MV_CC_DEVICE_INFO* pstMVDevInfo)
 {
     if (NULL == pstMVDevInfo)
@@ -85,46 +44,6 @@ bool PrintDeviceInfo(MV_CC_DEVICE_INFO* pstMVDevInfo)
 
     return true;
 }
-
-// static void* WorkThread(void* pUser)
-// {
-//     int nRet = MV_OK;
-//     // ch:获取数据包大小 | en:Get payload size
-//     MVCC_INTVALUE stParam;
-//     memset(&stParam, 0, sizeof(MVCC_INTVALUE));
-//     nRet = MV_CC_GetIntValue(pUser, "PayloadSize", &stParam);
-//     if (MV_OK != nRet)
-//     {
-//         printf("Get PayloadSize fail! nRet [0x%x]\n", nRet);
-//         return NULL;
-//     }
-//     MV_FRAME_OUT_INFO_EX stImageInfo = {0};
-//     memset(&stImageInfo, 0, sizeof(MV_FRAME_OUT_INFO_EX));
-//     unsigned char * pData = (unsigned char *)malloc(sizeof(unsigned char) * stParam.nCurValue);
-//     if (NULL == pData)
-//     {
-//         return NULL;
-//     }
-//     unsigned int nDataSize = stParam.nCurValue;
-//     while(1)
-//     {
-// 		if(g_bExit)
-// 		{
-// 			break;
-// 		}
-//         nRet = MV_CC_GetOneFrameTimeout(pUser, pData, nDataSize, &stImageInfo, 1000);
-//         if (nRet == MV_OK)
-//         {
-//             printf("GetOneFrame, Width[%d], Height[%d], nFrameNum[%d]\n", 
-//                 stImageInfo.nWidth, stImageInfo.nHeight, stImageInfo.nFrameNum);
-//         }
-//         else{
-//             printf("No data[%x]\n", nRet);
-//         }
-//     }
-//     free(pData);
-//     return 0;
-// }
 
 std::vector<CameraInfo> CameraHikrobot::getCameraList(){
 
@@ -389,47 +308,16 @@ CameraFrame CameraHikrobot::getFrame(){
         printf("No data[%x]\n", nRet);
     }
 
-    free(pData);
-
-    // Create single image buffer
-    XI_IMG image;
-    image.size = sizeof(XI_IMG); // must be initialized
-    //image.bp = NULL;
-    //image.bp_size = 0;
-
-    if(triggerMode == triggerModeSoftware){
-        // Fire software trigger
-        stat = xiSetParamInt(camera, XI_PRM_TRG_SOFTWARE, 0);
-        HandleResult(stat,"xiSetParam (XI_PRM_TRG_SOFTWARE)");
-
-        // Retrieve image from camera
-        stat = xiGetImage(camera, 1000, &image);
-        HandleResult(stat,"xiGetImage");
-    } else {
-
-        // Retrieve image from camera
-        stat = xiGetImage(camera, 1000, &image);
-        HandleResult(stat,"xiGetImage");
-    }
-
-//    // Empty buffer
-//    while(xiGetImage(camera, 1, &image) == XI_OK){
-//        std::cerr << "drop!" << std::endl;
-//        continue;
-//    }
-
-    //std::cout << image.exposure_time_us  << std::endl << std::flush;
-    //std::cout << image.exposure_sub_times_us[3]  << std::endl << std::flush;
-    //std::cout << image.GPI_level  << std::endl << std::flush;
-
     CameraFrame frame;
-    frame.height = image.height;
-    frame.width = image.width;
-    frame.memory = (unsigned char*)image.bp;
-    frame.timeStamp = image.tsUSec;
-    frame.sizeBytes = image.bp_size;
-    frame.flags = image.GPI_level;
+    frame.height = stImageInfo.nHeight;
+    frame.width = stImageInfo.nWidth;
+    frame.memory = (unsigned char*)pData;
+    frame.timeStamp = stImageInfo.nHostTimeStamp;
 
+    //frame.sizeBytes = ;
+    //frame.flags = image.GPI_level;
+
+    free(pData);
     return frame;
 }
 

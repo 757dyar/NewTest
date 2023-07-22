@@ -37,4 +37,11 @@ Definition of Setting:
         https://www.benq.com/en-us/knowledge-center/knowledge/gamma-monitor.html#:~:text=Gamma%20can%20be%20described%20as,or%20from%20white%20to%20black.
     2. Hardware Trigger vs Software Trigger
         https://www.vision-doctor.com/en/camera-technology-basics/trigger-functions.html
-        
+
+
+22/07/2023 Progress:
+    Outstanding:
+        - stop capture
+        - get width
+        - get height
+        - destructor
