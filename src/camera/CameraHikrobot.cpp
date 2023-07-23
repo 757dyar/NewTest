@@ -196,7 +196,7 @@ CameraHikrobot::CameraHikrobot(unsigned int camNum, CameraTriggerMode triggerMod
         //MV_CC_SetIntValueEx ,
         //MV_CC_SetEnumValue , MV_CC_SetFloatValue , MV_CC_SetBoolValue ,
         //MV_CC_SetStringValue , MV_CC_SetCommandValue
-
+        printf("constructor: %u\n", 1);
     }
     while (0);
 
@@ -220,6 +220,8 @@ CameraSettings CameraHikrobot::getCameraSettings(){
     if (MV_OK != nRet) { printf("Get Camera gain failed!"); }
     settings.shutter = stExposureTime.fCurValue / 1000.0;
     settings.gain = stGain.fCurValue;
+
+    printf("getCameraSettings: %u\n", 1);
 
     return settings;
 }
@@ -257,6 +259,8 @@ void CameraHikrobot::setCameraSettings(CameraSettings settings){
     nRet = MV_CC_SetEnumValue(handle, "PixelFormat", 0x01080001);
     if (MV_OK != nRet) {printf("Pixel Format Setting Fail!\n");}
 
+    printf("setCameraSettings: %u\n", 1);
+
 }
 
 void CameraHikrobot::startCapture(){
@@ -267,11 +271,13 @@ void CameraHikrobot::startCapture(){
     {
         printf("Start Grabbing fail! nRet [0x%x]\n", nRet);
     }
+    printf("startCapture: %u\n", 1);
 }
 
 void CameraHikrobot::stopCapture(){
     nRet = MV_CC_StopGrabbing(handle);
     if (MV_OK != nRet) { printf("MV_CC_StopGrabbing fail! nRet [%x]\n", nRet); }
+    printf("stopCapture: %u\n", 1);
 }
 
 CameraFrame CameraHikrobot::getFrame(){
@@ -314,7 +320,8 @@ CameraFrame CameraHikrobot::getFrame(){
 
     //frame.sizeBytes = ;
     //frame.flags = image.GPI_level;
-
+    printf("getFrame: %u\n", 1);
+    
     free(pData);
     return frame;
 }
@@ -328,6 +335,7 @@ size_t CameraHikrobot::getFrameWidth(){
     MVCC_INTVALUE stWidth = {0};
     nRet = MV_CC_GetIntValue(handle, "Width", &stWidth);
     if (MV_OK != nRet) { printf("Get Camera frame width failed!"); }
+    printf("getFrameWidth: %u\n", 1);
     return stWidth.nCurValue;
 }
 
@@ -335,10 +343,13 @@ size_t CameraHikrobot::getFrameHeight(){
     MVCC_INTVALUE stHeight = {0};
     nRet = MV_CC_GetIntValue(handle, "Height", &stHeight);
     if (MV_OK != nRet) { printf("Get Camera frame height failed!"); }
+    printf("getFrameHeight: %u\n", 1);
     return stHeight.nCurValue;
 }
 
 CameraHikrobot::~CameraHikrobot(){
+
+    printf("destructor: %u\n", 1);
 
     nRet = MV_CC_CloseDevice(handle);
     if (MV_OK != nRet)

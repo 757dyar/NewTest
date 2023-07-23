@@ -1,4 +1,5 @@
 #include "CameraFactory.h"
+#include <iostream>
 
 #ifdef WITH_CAMERAIIDC
 #include "CameraIIDC.h"
@@ -38,6 +39,7 @@ std::vector<std::vector<CameraInfo>> CameraFactory::GetInterfaceCameraList() {
 #endif
 #ifdef WITH_CAMERAHIKROBOT
   std::vector<CameraInfo> hikrobotcameras = CameraHikrobot::getCameraList();
+  std::cout << "test";
   ret.push_back(hikrobotcameras);
 #endif
 

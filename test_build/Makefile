@@ -252,7 +252,6 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/qt_config.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.conf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_post.prf \
-		../src/.qmake.stash \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/exclusive_builds.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/toolchain.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/default_pre.prf \
@@ -456,7 +455,6 @@ Makefile: ../src/SLStudio.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qm
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/qt_config.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.conf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_post.prf \
-		.qmake.stash \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/exclusive_builds.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/toolchain.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/default_pre.prf \
@@ -553,7 +551,6 @@ Makefile: ../src/SLStudio.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qm
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/qt_config.prf:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.conf:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_post.prf:
-.qmake.stash:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/exclusive_builds.prf:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/toolchain.prf:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/default_pre.prf:
@@ -866,7 +863,6 @@ CalibrationDialog.o: ../src/CalibrationDialog.cpp ../src/CalibrationDialog.h \
 		../src/PointCloudWidget.h \
 		../src/VideoDialog.h \
 		ui_CalibrationDialog.h \
-		../src/VideoWidget.h \
 		../src/projector/ProjectorOpenGL.h \
 		../src/projector/OpenGLContext.h \
 		../src/camera/CameraFactory.h \
@@ -1015,9 +1011,7 @@ TriangulatorWorker.o: ../src/TriangulatorWorker.cpp ../src/TriangulatorWorker.h 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o TriangulatorWorker.o ../src/TriangulatorWorker.cpp
 
 VideoDialog.o: ../src/VideoDialog.cpp ../src/VideoDialog.h \
-		ui_VideoDialog.h \
-		../src/VideoWidget.h \
-		../src/camera/Camera.h
+		ui_VideoDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o VideoDialog.o ../src/VideoDialog.cpp
 
 VideoWidget.o: ../src/VideoWidget.cpp ../src/VideoWidget.h \
