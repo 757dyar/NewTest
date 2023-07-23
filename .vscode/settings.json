@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "*.ipp": "cpp",
+        "chrono": "cpp",
+        "cstddef": "cpp",
+        "functional": "cpp",
+        "*.txx": "cpp",
+        "complex": "cpp"
+    }
+}

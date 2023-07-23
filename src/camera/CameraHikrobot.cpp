@@ -11,7 +11,7 @@
 
 
 
-#define HandleResult(res,place) if (res!=XI_OK) {printf("CameraHikrobot: Error at %s (%d)\n",place,res); fflush(stdout);}
+//#define HandleResult(res,place) if (res!=XI_OK) {printf("CameraHikrobot: Error at %s (%d)\n",place,res); fflush(stdout);}
 
 bool PrintDeviceInfo(MV_CC_DEVICE_INFO* pstMVDevInfo)
 {
@@ -73,6 +73,7 @@ CameraHikrobot::CameraHikrobot(unsigned int camNum, CameraTriggerMode triggerMod
     handle{ NULL }
     
     {
+        handle = NULL;
     do
     {
         MV_CC_DEVICE_INFO_LIST stDeviceList;
@@ -214,8 +215,9 @@ CameraSettings CameraHikrobot::getCameraSettings(){
     MVCC_FLOATVALUE stExposureTime = {0};
     MVCC_FLOATVALUE stGain = {0};
     nRet = MV_CC_GetFloatValue(handle, "ExposureTime", &stExposureTime);
+    if (MV_OK != nRet) { printf("Get Camera exposure time failed!"); }
     nRet = MV_CC_GetFloatValue(handle, "Gain", &stGain);
-
+    if (MV_OK != nRet) { printf("Get Camera gain failed!"); }
     settings.shutter = stExposureTime.fCurValue / 1000.0;
     settings.gain = stGain.fCurValue;
 
@@ -268,12 +270,8 @@ void CameraHikrobot::startCapture(){
 }
 
 void CameraHikrobot::stopCapture(){
-
-    if(!capturing){
-        std::cerr << "CameraHikrobot: not capturing!" << std::endl;
-        return;
-    }
-
+    nRet = MV_CC_StopGrabbing(handle);
+    if (MV_OK != nRet) { printf("MV_CC_StopGrabbing fail! nRet [%x]\n", nRet); }
 }
 
 CameraFrame CameraHikrobot::getFrame(){
@@ -327,29 +325,43 @@ size_t CameraHikrobot::getFrameSizeBytes(){
 }
 
 size_t CameraHikrobot::getFrameWidth(){
-    int w;
-    xiGetParamInt(camera, XI_PRM_WIDTH, &w);
-
-    return w;
+    MVCC_INTVALUE stWidth = {0};
+    nRet = MV_CC_GetIntValue(handle, "Width", &stWidth);
+    if (MV_OK != nRet) { printf("Get Camera frame width failed!"); }
+    return stWidth.nCurValue;
 }
 
 size_t CameraHikrobot::getFrameHeight(){
-    int h;
-    xiGetParamInt(camera, XI_PRM_HEIGHT, &h);
-
-    return h;
+    MVCC_INTVALUE stHeight = {0};
+    nRet = MV_CC_GetIntValue(handle, "Height", &stHeight);
+    if (MV_OK != nRet) { printf("Get Camera frame height failed!"); }
+    return stHeight.nCurValue;
 }
 
 CameraHikrobot::~CameraHikrobot(){
 
-    if(capturing){
-        // Stop acquisition
-        stat = xiStopAcquisition(camera);
-        HandleResult(stat,"xiStopAcquisition");
+    nRet = MV_CC_CloseDevice(handle);
+    if (MV_OK != nRet)
+    {
+        printf("MV_CC_CloseDevice fail! nRet [%x]\n", nRet);
     }
 
-    // Close device
-    xiCloseDevice(camera);
+    // 销毁句柄
+    // destroy handle
+    nRet = MV_CC_DestroyHandle(handle);
+    if (MV_OK != nRet)
+    {
+        printf("MV_CC_DestroyHandle fail! nRet [%x]\n", nRet);
+    }
+
+    if (nRet != MV_OK)
+    {
+        if (handle != NULL)
+        {
+            MV_CC_DestroyHandle(handle);
+            handle = NULL;
+        }
+    }
 }
 
 

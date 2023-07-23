@@ -337,7 +337,7 @@ contains(DEFINES, WITH_CAMERAPOINTGREY) {
 unix:!macx:exists(/opt/MVS/include/MvCameraControl.h){
     INCLUDEPATH += /opt/MVS/include
     DEFINES += WITH_CAMERAHIKROBOT
-    LIBS += -L/opt/MVS/lib/ -libMvCameraControl
+    LIBS += -L/opt/MVS/lib/64/ -lMvCameraControl
 }
 contains(DEFINES, WITH_CAMERAHIKROBOT) {
     HEADERS += camera/CameraHikrobot.h

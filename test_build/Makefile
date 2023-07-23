@@ -40,7 +40,7 @@ DISTNAME      = SLStudio1.0.0
 DISTDIR = /home/asdzxc1122/NewTest/test_build/.tmp/SLStudio1.0.0
 LINK          = g++
 LFLAGS        = -Wl,-O1
-LIBS          = $(SUBLIBS) -lvtkRenderingCore-9.1 -lvtkFiltersGeometry-9.1 -lvtkFiltersCore-9.1 -lvtkCommonExecutionModel-9.1 -lvtkCommonDataModel-9.1 -lvtkCommonMath-9.1 -lvtkCommonCore-9.1 -lvtkIOImage-9.1 -lvtkGUISupportQt-9.1 -lvtkRenderingOpenGL2-9.1 -lboost_system -ldc1394 -L/opt/MVS/lib/ -libMvCameraControl -lopencv_stitching -lopencv_alphamat -lopencv_aruco -lopencv_barcode -lopencv_bgsegm -lopencv_bioinspired -lopencv_ccalib -lopencv_dnn_objdetect -lopencv_dnn_superres -lopencv_dpm -lopencv_face -lopencv_freetype -lopencv_fuzzy -lopencv_hdf -lopencv_hfs -lopencv_img_hash -lopencv_intensity_transform -lopencv_line_descriptor -lopencv_mcc -lopencv_quality -lopencv_rapid -lopencv_reg -lopencv_rgbd -lopencv_saliency -lopencv_shape -lopencv_stereo -lopencv_structured_light -lopencv_phase_unwrapping -lopencv_superres -lopencv_optflow -lopencv_surface_matching -lopencv_tracking -lopencv_highgui -lopencv_datasets -lopencv_text -lopencv_plot -lopencv_ml -lopencv_videostab -lopencv_videoio -lopencv_viz -lopencv_wechat_qrcode -lopencv_ximgproc -lopencv_video -lopencv_xobjdetect -lopencv_objdetect -lopencv_calib3d -lopencv_imgcodecs -lopencv_features2d -lopencv_dnn -lopencv_flann -lopencv_xphoto -lopencv_photo -lopencv_imgproc -lopencv_core -lpcl_visualization -lpcl_io -lOpenNI -lOpenNI2 -lpcl_surface -lpcl_tracking -lpcl_features -lpcl_filters -lpcl_sample_consensus -lpcl_search -lpcl_kdtree -lpcl_octree -lpcl_common -lflann -lflann_cpp -llz4 -L/usr/lib64 -lGLEW -lGLU -lX11 -lusb-1.0 -lpthread /usr/lib/x86_64-linux-gnu/libQt5OpenGL.so /usr/lib/x86_64-linux-gnu/libQt5Widgets.so /usr/lib/x86_64-linux-gnu/libQt5Gui.so /usr/lib/x86_64-linux-gnu/libQt5Core.so -lGL   
+LIBS          = $(SUBLIBS) -lvtkRenderingCore-9.1 -lvtkFiltersGeometry-9.1 -lvtkFiltersCore-9.1 -lvtkCommonExecutionModel-9.1 -lvtkCommonDataModel-9.1 -lvtkCommonMath-9.1 -lvtkCommonCore-9.1 -lvtkIOImage-9.1 -lvtkGUISupportQt-9.1 -lvtkRenderingOpenGL2-9.1 -lboost_system -ldc1394 -L/opt/MVS/lib/64/ -lMvCameraControl -lopencv_stitching -lopencv_alphamat -lopencv_aruco -lopencv_barcode -lopencv_bgsegm -lopencv_bioinspired -lopencv_ccalib -lopencv_dnn_objdetect -lopencv_dnn_superres -lopencv_dpm -lopencv_face -lopencv_freetype -lopencv_fuzzy -lopencv_hdf -lopencv_hfs -lopencv_img_hash -lopencv_intensity_transform -lopencv_line_descriptor -lopencv_mcc -lopencv_quality -lopencv_rapid -lopencv_reg -lopencv_rgbd -lopencv_saliency -lopencv_shape -lopencv_stereo -lopencv_structured_light -lopencv_phase_unwrapping -lopencv_superres -lopencv_optflow -lopencv_surface_matching -lopencv_tracking -lopencv_highgui -lopencv_datasets -lopencv_text -lopencv_plot -lopencv_ml -lopencv_videostab -lopencv_videoio -lopencv_viz -lopencv_wechat_qrcode -lopencv_ximgproc -lopencv_video -lopencv_xobjdetect -lopencv_objdetect -lopencv_calib3d -lopencv_imgcodecs -lopencv_features2d -lopencv_dnn -lopencv_flann -lopencv_xphoto -lopencv_photo -lopencv_imgproc -lopencv_core -lpcl_visualization -lpcl_io -lOpenNI -lOpenNI2 -lpcl_surface -lpcl_tracking -lpcl_features -lpcl_filters -lpcl_sample_consensus -lpcl_search -lpcl_kdtree -lpcl_octree -lpcl_common -lflann -lflann_cpp -llz4 -L/usr/lib64 -lGLEW -lGLU -lX11 -lusb-1.0 -lpthread /usr/lib/x86_64-linux-gnu/libQt5OpenGL.so /usr/lib/x86_64-linux-gnu/libQt5Widgets.so /usr/lib/x86_64-linux-gnu/libQt5Gui.so /usr/lib/x86_64-linux-gnu/libQt5Core.so -lGL   
 AR            = ar cqs
 RANLIB        = 
 SED           = sed
@@ -1030,7 +1030,11 @@ CameraFactory.o: ../src/camera/CameraFactory.cpp ../src/camera/CameraFactory.h \
 		../src/camera/CameraXIMEA.h \
 		../src/camera/CameraIDSImaging.h \
 		../src/camera/CameraPointGrey.h \
-		../src/camera/CameraHikrobot.h
+		../src/camera/CameraHikrobot.h \
+		/opt/MVS/include/MvCameraControl.h \
+		/opt/MVS/include/MvErrorDefine.h \
+		/opt/MVS/include/CameraParams.h \
+		/opt/MVS/include/PixelType.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o CameraFactory.o ../src/camera/CameraFactory.cpp
 
 CodecFactory.o: ../src/codec/CodecFactory.cpp ../src/codec/CodecFactory.h \
