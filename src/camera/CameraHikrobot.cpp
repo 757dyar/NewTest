@@ -6,12 +6,7 @@
 #include <pthread.h>
 #include <cstdio>
 
-// Note: library headers conflict with IDS imaging headers
-//#include <xiApi.h>
-
-
-
-//#define HandleResult(res,place) if (res!=XI_OK) {printf("CameraHikrobot: Error at %s (%d)\n",place,res); fflush(stdout);}
+#include <MvCameraControl.h>
 
 bool PrintDeviceInfo(MV_CC_DEVICE_INFO* pstMVDevInfo)
 {
@@ -47,37 +42,42 @@ bool PrintDeviceInfo(MV_CC_DEVICE_INFO* pstMVDevInfo)
 
 std::vector<CameraInfo> CameraHikrobot::getCameraList(){
 
-    MV_CC_DEVICE_INFO_LIST stDeviceList;
-    unsigned int numCams = stDeviceList.nDeviceNum;
-    memset(&stDeviceList, 0, sizeof(MV_CC_DEVICE_INFO_LIST));
+    //MV_CC_DEVICE_INFO_LIST stDeviceList;
+    //unsigned int numCams = stDeviceList.nDeviceNum;
+    //memset(&stDeviceList, 0, sizeof(MV_CC_DEVICE_INFO_LIST));
     //nRet = MV_CC_EnumDevices(MV_GIGE_DEVICE | MV_USB_DEVICE, &stDeviceList);
-    std::vector<CameraInfo> ret(numCams);
 
-    for(unsigned int i = 0; i < numCams; i++) {
-        //MV_CC_DEVICE_INFO* pDeviceInfo = stDeviceList.pDeviceInfo[i];
-        CameraInfo info;
-        info.vendor = "Hikrobot";
-        info.model = "Hikrobot";
-        info.busID = i;
-        ret[i] = info;
-    }
+    //printf("camnum: %u\n", numCams);
+
+    std::vector<CameraInfo> ret(1);
+
+    ret[0].vendor = "Hikrobot";
+    ret[0].model = "MV-CA050-20UM";
+    // for(unsigned int i = 0; i < numCams; i++) {
+    //     //MV_CC_DEVICE_INFO* pDeviceInfo = stDeviceList.pDeviceInfo[i];
+    //     CameraInfo info;
+    //     info.vendor = "Hikrobot";
+    //     info.model = "Hikrobot";
+    //     info.busID = i;
+    //     ret[i] = info;
+    // }
+
+
     return ret;
 }
 
 CameraHikrobot::CameraHikrobot(unsigned int camNum, CameraTriggerMode triggerMode)
-    : Camera(triggerMode), 
-    camera(NULL), //this is the variable copied from Ximea camera
+    : Camera(triggerMode),
     g_bExit{ false }, 
     g_nPayloadSize{ 0 }, 
     nRet{ MV_OK }, 
     handle{ NULL }
     
     {
-        handle = NULL;
     do
     {
         MV_CC_DEVICE_INFO_LIST stDeviceList;
-        memset(&stDeviceList, 0, sizeof(MV_CC_DEVICE_INFO_LIST));
+        //memset(&stDeviceList, 0, sizeof(MV_CC_DEVICE_INFO_LIST));
         nRet = MV_CC_EnumDevices(MV_GIGE_DEVICE | MV_USB_DEVICE, &stDeviceList);
 
         //Check if any Hikrobot camera is successfully connected

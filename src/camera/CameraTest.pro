@@ -41,7 +41,7 @@ win32 {
 
 unix:!macx {
     CONFIG += link_pkgconfig
-    PKGCONFIG += opencv
+    PKGCONFIG += opencv4
     #LIBS += -lopencv_core -lGLU
     exists(/usr/include/dc1394/dc1394.h){
         DEFINES += WITH_CAMERAIIDC
@@ -55,6 +55,11 @@ unix:!macx {
         INCLUDEPATH += /opt/XIMEA/include
         DEFINES += WITH_CAMERAXIMEA
         LIBS += -lm3api
+    }
+    exists(/opt/MVS/include/MvCameraControl.h){
+        INCLUDEPATH += /opt/MVS/include
+        DEFINES += WITH_CAMERAHIKROBOT
+        LIBS += -L/opt/MVS/lib/64/ -lMvCameraControl
     }
 }
 
@@ -87,4 +92,9 @@ contains(DEFINES, WITH_CAMERAIDSIMAGING) {
 contains(DEFINES, WITH_CAMERAXIMEA) {
     HEADERS += CameraXIMEA.h
     SOURCES += CameraXIMEA.cpp
+}
+# libhikrobot
+contains(DEFINES, WITH_CAMERAHIKROBOT) {
+    HEADERS += CameraHikrobot.h
+    SOURCES += CameraHikrobot.cpp
 }

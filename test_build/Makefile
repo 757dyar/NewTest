@@ -1024,11 +1024,7 @@ CameraFactory.o: ../src/camera/CameraFactory.cpp ../src/camera/CameraFactory.h \
 		../src/camera/CameraXIMEA.h \
 		../src/camera/CameraIDSImaging.h \
 		../src/camera/CameraPointGrey.h \
-		../src/camera/CameraHikrobot.h \
-		/opt/MVS/include/MvCameraControl.h \
-		/opt/MVS/include/MvErrorDefine.h \
-		/opt/MVS/include/CameraParams.h \
-		/opt/MVS/include/PixelType.h
+		../src/camera/CameraHikrobot.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o CameraFactory.o ../src/camera/CameraFactory.cpp
 
 CodecFactory.o: ../src/codec/CodecFactory.cpp ../src/codec/CodecFactory.h \

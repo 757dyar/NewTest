@@ -1,13 +1,8 @@
+#pragma once
 #ifndef CAMERAHIKROBOT_H
 #define CAMERAHIKROBOT_H
 
 #include "Camera.h"
-#include <MvCameraControl.h>
-
-////////////////////////////////////////// For later change
-// XIMEA specific type
-typedef void* HANDLE;
-//////////////////////////////////////////
 
 class CameraHikrobot : public Camera {
     public:
@@ -28,7 +23,6 @@ class CameraHikrobot : public Camera {
         // void* WorkThread(void* pUser);
         
     private:
-        HANDLE camera;
         int stat;
 
         bool g_bExit;
