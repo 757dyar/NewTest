@@ -29,6 +29,7 @@ ProjectorLC4500::ProjectorLC4500(unsigned int) {
   while (!DLPC350_USB_IsConnected()) {
     DLPC350_USB_Open();
     QThread::msleep(200);
+    showError("while (!DLPC350_USB_IsConnected())");
   }
   std::cout << std::endl;
   //    unsigned char HWStatus, SysStatus, MainStatus;
@@ -43,11 +44,15 @@ ProjectorLC4500::ProjectorLC4500(unsigned int) {
   if (isStandby) {
     DLPC350_SetPowerMode(0);
     QThread::msleep(2000);
+    showError("Lightcrafter is in standyby mode and cannot be used.  Please leave the standby mode.");
   }
+  else
+    showError("Lightcrafter not in standyby mode. Available for use.");
   while (isStandby) {
     QThread::msleep(50);
     DLPC350_GetPowerMode(&isStandby);
   }
+
 
   // Set LED selection
   const bool SeqCtrl = false; // manual (false) or automatic (true)
@@ -69,6 +74,7 @@ ProjectorLC4500::ProjectorLC4500(unsigned int) {
   if (!DLPC350_SetMode(patternMode)) {
     showError("Error Setting Pattern Mode");
   }
+    showError("1111111111");
 }
 
 void ProjectorLC4500::setPatterns(
